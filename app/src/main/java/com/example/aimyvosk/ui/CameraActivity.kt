@@ -106,21 +106,29 @@ class CameraActivity : AppCompatActivity() {
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
 
+        // Capture style on Main Thread
+        val style = when {
+            viewBinding.rbPixel.isChecked -> com.example.aimyvosk.data.StyleType.PIXEL_ART
+            viewBinding.rbSketch.isChecked -> com.example.aimyvosk.data.StyleType.SKETCH
+            viewBinding.rbCyberpunk.isChecked -> com.example.aimyvosk.data.StyleType.CYBERPUNK
+            else -> com.example.aimyvosk.data.StyleType.ANIME
+        }
+
         imageCapture.takePicture(
-            ContextCompat.getMainExecutor(this),
+            cameraExecutor,
             object : ImageCapture.OnImageCapturedCallback() {
                 override fun onError(exc: ImageCaptureException) {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
                 }
 
                 override fun onCaptureSuccess(image: ImageProxy) {
-                    processImageProxy(image)
+                    processImageProxy(image, style)
                 }
             }
         )
     }
 
-    private fun processImageProxy(image: ImageProxy) {
+    private fun processImageProxy(image: ImageProxy, style: com.example.aimyvosk.data.StyleType) {
         val buffer: ByteBuffer = image.planes[0].buffer
         val bytes = ByteArray(buffer.remaining())
         buffer.get(bytes)
@@ -132,13 +140,6 @@ class CameraActivity : AppCompatActivity() {
             BitmapUtils.rotateBitmap(bitmap, rotation.toFloat())
         } else {
             bitmap
-        }
-
-        val style = when {
-            viewBinding.rbPixel.isChecked -> com.example.aimyvosk.data.StyleType.PIXEL_ART
-            viewBinding.rbSketch.isChecked -> com.example.aimyvosk.data.StyleType.SKETCH
-            viewBinding.rbCyberpunk.isChecked -> com.example.aimyvosk.data.StyleType.CYBERPUNK
-            else -> com.example.aimyvosk.data.StyleType.ANIME
         }
 
         viewModel.processImage(rotatedBitmap, style)

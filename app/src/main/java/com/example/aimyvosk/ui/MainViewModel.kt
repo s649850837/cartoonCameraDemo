@@ -24,9 +24,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun processImage(bitmap: Bitmap, style: StyleType) {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = repository.applyCartoonFilter(bitmap, style)
-            _processedImage.value = result
-            _isLoading.value = false
+            try {
+                val result = repository.applyCartoonFilter(bitmap, style)
+                _processedImage.value = result
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Optionally show error message
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
     

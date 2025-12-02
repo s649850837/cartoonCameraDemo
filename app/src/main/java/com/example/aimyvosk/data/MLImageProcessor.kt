@@ -19,7 +19,9 @@ class MLImageProcessor(private val context: Context) {
     init {
         try {
             val modelFile = FileUtil.loadMappedFile(context, modelName)
-            val options = Interpreter.Options()
+            val options = Interpreter.Options().apply {
+                setNumThreads(4)
+            }
             interpreter = Interpreter(modelFile, options)
         } catch (e: Exception) {
             // Model not found or error loading
@@ -51,7 +53,12 @@ class MLImageProcessor(private val context: Context) {
         val outputTensorBuffer = ByteBuffer.allocateDirect(1 * 512 * 512 * 3 * 4) // Float is 4 bytes
         outputTensorBuffer.order(java.nio.ByteOrder.nativeOrder())
         
-        tflite.run(tensorImage.buffer, outputTensorBuffer)
+        try {
+            tflite.run(tensorImage.buffer, outputTensorBuffer)
+        } catch (e: Exception) {
+            android.util.Log.e("MLImageProcessor", "Error processing image", e)
+            return inputBitmap
+        }
 
         // 3. Post-process
         outputTensorBuffer.rewind()
