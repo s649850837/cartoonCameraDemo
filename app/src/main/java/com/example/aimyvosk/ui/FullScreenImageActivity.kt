@@ -16,13 +16,41 @@ class FullScreenImageActivity : AppCompatActivity() {
         binding = ActivityFullScreenImageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val imagePath = intent.getStringExtra(EXTRA_IMAGE_PATH)
-        if (imagePath != null) {
-            binding.fullScreenImageView.setImageURI(Uri.fromFile(File(imagePath)))
+        val imagePaths = intent.getStringArrayListExtra(EXTRA_IMAGE_PATHS)
+        val startPosition = intent.getIntExtra(EXTRA_START_POSITION, 0)
+
+        if (imagePaths != null) {
+            val adapter = FullScreenImageAdapter(imagePaths)
+            binding.viewPager.adapter = adapter
+            binding.viewPager.setCurrentItem(startPosition, false)
         }
     }
 
     companion object {
-        const val EXTRA_IMAGE_PATH = "extra_image_path"
+        const val EXTRA_IMAGE_PATHS = "extra_image_paths"
+        const val EXTRA_START_POSITION = "extra_start_position"
     }
+}
+
+class FullScreenImageAdapter(private val imagePaths: List<String>) :
+    androidx.recyclerview.widget.RecyclerView.Adapter<FullScreenImageAdapter.ImageViewHolder>() {
+
+    inner class ImageViewHolder(val binding: com.example.aimyvosk.databinding.ItemFullScreenImageBinding) :
+        androidx.recyclerview.widget.RecyclerView.ViewHolder(binding.root)
+
+    override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): ImageViewHolder {
+        val binding = com.example.aimyvosk.databinding.ItemFullScreenImageBinding.inflate(
+            android.view.LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return ImageViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
+        val imagePath = imagePaths[position]
+        holder.binding.imageView.setImageURI(Uri.fromFile(File(imagePath)))
+    }
+
+    override fun getItemCount(): Int = imagePaths.size
 }

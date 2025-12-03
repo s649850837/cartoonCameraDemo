@@ -87,7 +87,9 @@ class GalleryActivity : AppCompatActivity() {
             binding.recyclerView.layoutManager = GridLayoutManager(this, 3)
             binding.recyclerView.adapter = GalleryAdapter(images) { file ->
                 val intent = android.content.Intent(this, FullScreenImageActivity::class.java)
-                intent.putExtra(FullScreenImageActivity.EXTRA_IMAGE_PATH, file.absolutePath)
+                val imagePaths = ArrayList(images.map { it.absolutePath })
+                intent.putStringArrayListExtra(FullScreenImageActivity.EXTRA_IMAGE_PATHS, imagePaths)
+                intent.putExtra(FullScreenImageActivity.EXTRA_START_POSITION, images.indexOf(file))
                 startActivity(intent)
             }
         }
